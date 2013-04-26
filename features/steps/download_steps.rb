@@ -57,8 +57,6 @@ Then(/^the page should contain title: "(.*?)"$/) do |arg1|
   p listing[:description]
   p listing[:rental_rate]
   address = LegoK::Api.parse_address(@page)
-  p address[:address]
-  p address[:latitude]
-  p address[:longitude]
+  p address
   LegoK::Api.load_photos(@listing_id)
 end

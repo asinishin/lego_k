@@ -3,8 +3,8 @@ require 'mechanize'
 
 module LegoK
 
-  BASE_URL    = "http://toronto.kijiji.ca" #ENV['LEGOK_BASE_URL']
-  BASE_PHOTOS = "photos/"                  #ENV['LEGOK_BASE_PHOTOS']
+  BASE_URL    = ENV['LEGOK_BASE_URL']
+  BASE_PHOTOS = ENV['LEGOK_BASE_PHOTOS']
 
   class Api
 
@@ -94,14 +94,28 @@ module LegoK
 
     def self.parse_address(page)
       s = Api::extract_address(page)
+        .split("\r\n")[0]
+	.split(',')
+	.map { |e| e.strip }
+	.reject { |e| ['Toronto', 'Canada'].include?(e) }
+      if s.size > 1
+        addr     = s[0]
+	zip_code = s[1]
+      else
+        addr     = ''
+	zip_code = s[0]
+      end
+      zip_code = zip_code.split(' ')
+        .reject { |e| e == 'ON' }
+	.join(' ')
       map_page = page.link_with(:class => "viewmap-link").click
       lat = map_page.search("meta[property='og:latitude']").first.attr('content')
       lng = map_page.search("meta[property='og:longitude']").first.attr('content')
       {
-	address:        s,
-	city:           'No city',
-	state_province: 'No province',
-	zip_code:       'No ZIP',
+	address:        addr,
+	city:           'Toronto',
+	state_province: 'ON',
+	zip_code:       zip_code,
 	country_id:     1,
 	latitude:       lat,
 	longitude:      lng
