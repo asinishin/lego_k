@@ -146,7 +146,7 @@ module LegoK
     end
 
     def self.parse_rate(page)
-      Api::extract_table_value(page, 'Price')
+      Api::extract_table_value(page, 'Price').gsub(/$/, '')
     end
 
     def self.extract_table_value(page, column)
