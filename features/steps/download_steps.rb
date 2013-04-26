@@ -52,7 +52,7 @@ When(/^the service loaded the page with specified listing$/) do
 end
 
 Then(/^the page should contain title: "(.*?)"$/) do |arg1|
-  listing = LegoK::Api.parse_listing(@page)
+  listing = LegoK::Api.parse_listing(@page, @listing_id)
   p listing[:title]
   p listing[:description]
   p listing[:rental_rate]

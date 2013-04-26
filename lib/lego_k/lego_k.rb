@@ -78,7 +78,7 @@ module LegoK
     end
 
     # Methods for parsing a listing
-    def self.parse_listing(page)
+    def self.parse_listing(page, listing_id)
       {
 	title:          page.search("h1#preview-local-title").text,
 	description:    Api::parse_description(page),
@@ -93,12 +93,13 @@ module LegoK
 	surface_id:     1,
 	rental_term_id: 1,
 	is_no_height:   false,
-	source_site:    'kj'
+	source_site:    'kj',
+	source_id:      listing_id
       }
     end
 
     def self.filter(listing)
-      return false if listing[:title].include?('WANTED')
+      return false if listing[:title].upcase.include?('WANTED')
       true
     end
 
