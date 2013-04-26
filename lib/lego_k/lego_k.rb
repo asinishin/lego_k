@@ -80,7 +80,7 @@ module LegoK
     # Methods for parsing a listing
     def self.parse_listing(page, listing_id)
       {
-	title:          page.search("h1#preview-local-title").text,
+	title:          Api::extract_title(page),
 	description:    Api::parse_description(page),
 	space_type_id:  1,
 	length:         1.0,
@@ -132,6 +132,12 @@ module LegoK
 	latitude:       lat,
 	longitude:      lng
       }    
+    end
+
+    def self.extract_title(page)
+      s = page.search("h1#preview-local-title").text
+      return s[0..49] if s.size > 50
+      s
     end
 
     def self.extract_address(page)
