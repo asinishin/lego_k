@@ -33,7 +33,8 @@ module LegoK
 
     # Low level methods of operating with listings within a page
     def self.detect_new_listings(page, last_loaded_listing_id) # returns ids of appropirated listings or []
-      ids = page.search("input[name='ilIds']").attr('value').value.split(',')
+      #ids = page.search("input[name='ilIds']").attr('value').value.split(',')
+      ids = page.search("input[name='ilIds']").first.attr('value').split(',')
       ids.inject([]) do |r, e|
         if e > last_loaded_listing_id
 	  r << e
@@ -44,7 +45,7 @@ module LegoK
     end
 
     def self.detect_listing(page, listing_id)
-      page.search("input[name='ilIds']").attr('value').value.split(',').include?(listing_id)
+      page.search("input[name='ilIds']").first.attr('value').split(',').include?(listing_id)
     end
 
     def self.load_listing_page(page, listing_id)
