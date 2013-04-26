@@ -100,6 +100,8 @@ module LegoK
 
     def self.filter(listing, address)
       return false if listing[:title].upcase.include?('WANTED')
+      return false if address[:zip_code].nil?
+      return false if address[:zip_code].size == 0
       return false if address[:zip_code].size > 15
       true
     end
