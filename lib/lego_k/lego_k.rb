@@ -112,11 +112,17 @@ module LegoK
 	.split(',')
 	.map { |e| e.strip }
 	.reject { |e| ['Toronto', 'Canada'].include?(e) }
-      if s.size > 1
+      if s.size > 2
         addr     = s[0]
+	city     = s[1]
+	zip_code = s[2]
+      elsif s.size > 1
+        addr     = s[0]
+	city     = 'Toronto'
 	zip_code = s[1]
       else
-        addr     = '*'
+        addr     = '-'
+	city     = 'Toronto'
 	zip_code = s[0]
       end
       zip_code = zip_code.split(' ')
