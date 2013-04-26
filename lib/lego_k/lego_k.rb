@@ -23,12 +23,12 @@ module LegoK
     end
 
     def self.next_page(current_page) # moves to the next page
-      link = current_page.link_with(:class => "prevNextLink")
-      if link && link.text.include?('Next')
-        link.click
-      else
-        nil
+      current_page.links_with(:class => "prevNextLink").each do |link|
+	if link.text.include?('Next')
+	  return link.click
+	end
       end
+      nil
     end
 
     # Low level methods of operating with listings within a page
