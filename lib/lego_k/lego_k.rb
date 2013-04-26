@@ -35,7 +35,7 @@ module LegoK
     def self.detect_new_listings(page, last_loaded_listing_id) # returns ids of appropirated listings or []
       ids = page.search("input[name='ilIds']").attr('value').value.split(',')
       ids.inject([]) do |r, e|
-        if e.to_i > last_loaded_listing_id.to_i
+        if e > last_loaded_listing_id
 	  r << e
 	else
 	  r
