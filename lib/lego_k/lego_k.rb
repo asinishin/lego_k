@@ -97,6 +97,11 @@ module LegoK
       }
     end
 
+    def self.filter(listing)
+      return false if listing[:title].include?('WANTED')
+      true
+    end
+
     def self.parse_address(page)
       s = Api::extract_address(page)
         .split("\r\n")[0]
@@ -107,7 +112,7 @@ module LegoK
         addr     = s[0]
 	zip_code = s[1]
       else
-        addr     = ''
+        addr     = '*'
 	zip_code = s[0]
       end
       zip_code = zip_code.split(' ')
