@@ -12,32 +12,124 @@ module LegoK
       @@agent ||= Mechanize.new
     end
 
-    def self.download_next_listing(last_listing_id)
+    def self.download_next_listing(last_loaded_listing_id)
     end
     
     # Low level methods of pages navigation
     def self.first_page # opens the first page of default category
       page = agent.get(BASE_URL + '/')
-      page.links.find { |l| l.text == 'storage, parking' }.click
-      page.links.find { |l| l.text == ' Posted ' }.click # Change sorting order
+      page = page.links.find { |l| l.text == 'storage, parking' }.click
+      page.links.find { |l| l.text == "\r\nPosted\r\n" }.click # Change sorting order
     end
 
     def self.next_page(current_page) # moves to the next page
-      link = current_page.links.find { |l| l.text == 'Next >' }
-      if link
+      link = current_page.link_with(:class => "prevNextLink")
+      if link && link.text.include?('Next')
         link.click
+      else
+        nil
       end
     end
 
     # Low level methods of operating with listings within a page
-    def self.detect_listing(page, last_listing_id) # returns id of appropirated listing or nil
-      
+    def self.detect_new_listings(page, last_loaded_listing_id) # returns ids of appropirated listings or []
+      ids = page.search("input[name='ilIds']").attr('value').value.split(',')
+      ids.inject([]) do |r, e|
+        if e.to_i > last_loaded_listing_id.to_i
+	  r << e
+	else
+	  r
+	end
+      end
     end
 
-    def self.load_listing(page, listing_id)
+    def self.detect_listing(page, listing_id)
+      page.search("input[name='ilIds']").attr('value').value.split(',').include?(listing_id)
     end
 
-    def self.load_photo(page, photo_id)
+    def self.load_listing_page(page, listing_id)
+      node = page
+        .search("div[class='#{listing_id}']")
+	.first.parent.parent.parent
+	.children.css("td a.adLinkSB").first
+      if node
+	Mechanize::Page::Link.new(node, agent, page).click
+      end
+    end
+
+    def self.load_photos(listing_id)
+      FileUtils.rm_rf(Dir.glob(BASE_PHOTOS + '*'))
+      ix = 0
+      loop do
+	page = agent.get(BASE_URL + '/c-ViewAdLargeImage?AdId=' + listing_id + '&ImageIndex=' + ix.to_s)
+	pgr = page.search("td#pager").text.split(' / ')
+	image_url = page.search("img#LargeImage").attr('src')
+	agent.get(image_url).save_as(BASE_PHOTOS + "p#{listing_id}_#{ix}.jpg")
+	ix += 1
+	if (pgr.size == 2 && pgr[0] == pgr[1]) || ix > 5
+	  break
+	end
+      end
+    end
+
+    # Methods for parsing a listing
+    def self.parse_listing(page)
+      {
+	title:          page.search("h1#preview-local-title").text,
+	description:    Api::parse_description(page),
+	space_type_id:  1,
+	length:         1.0,
+	width:          1.0,
+	height:         1.0,
+	is_for_vehicle: false,
+	is_small_transport: false,
+	is_large_transport: false,
+	rental_rate:    Api::parse_rate(page),
+	surface_id:     1,
+	rental_term_id: 1,
+	is_no_height:   false,
+	source_site:    'kj'
+      }
+    end
+
+    def self.parse_address(page)
+      s = Api::extract_address(page)
+      map_page = page.link_with(:class => "viewmap-link").click
+      lat = map_page.search("meta[property='og:latitude']").first.attr('content')
+      lng = map_page.search("meta[property='og:longitude']").first.attr('content')
+      {
+	address:        s,
+	city:           'No city',
+	state_province: 'No province',
+	zip_code:       'No ZIP',
+	country_id:     1,
+	latitude:       lat,
+	longitude:      lng
+      }    
+    end
+
+    def self.extract_address(page)
+      Api::extract_table_value(page, 'Address')
+    end
+
+    def self.parse_description(page)
+      page.search("div#ad-desc")
+        .first.children
+	.css("span")
+	.text.strip
+    end
+
+    def self.parse_rate(page)
+      Api::extract_table_value(page, 'Price')
+    end
+
+    def self.extract_table_value(page, column)
+      page.search("table#attributeTable")
+        .first.children
+	.css("tr:contains('#{column}')")
+	.first.children
+	.css("td")
+	.last.text.strip
     end
 
   end

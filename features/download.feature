@@ -5,20 +5,16 @@ Feature: Listing dowloader
   An owner of the service
   Wants to scrap all Nobel laureats from Wiki
 
-  Scenario Outline: Service downloaded a new listing from the source server
-  # Given: empty DB of destination server for the test!
-  Given the service logged in to the destination server
-  When the service obtained "<Last Listing Id>" of "test" site
-  # And the service scrapped data after "<Last listing Id>"
-  And  the service uploaded the listing with data: "<Source Id>"
-  Then the destination server should return the success status
-  And  the service logged out
+  Scenario: Service loaded the first page of storage category
+  When the service loaded the first page
+  Then the page should contain filter "catbox" with value "storage, parking"
 
-  Scenarios:
-    | Source Id | Last Listing Id |
-    |    000001 |               0 |
-    |    000002 |          000001 |
-    |    000003 |          000002 |
-    |    000004 |          000003 |
-    |    000005 |          000004 |
-    |    000006 |          000005 |
+  Scenario: Service found a page with new listings
+  Given the last loaded listing: "460379560"
+  When the service detected a page with new listings
+  Then the page should contain listing: "460439158"
+
+  Scenario: Service loaded a page with the specified listing
+  When the service detected a page with the listing: "460379560"
+  And  the service loaded the page with specified listing
+  Then the page should contain title: "doiuble garage"
