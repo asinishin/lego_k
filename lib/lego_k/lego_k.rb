@@ -98,8 +98,12 @@ module LegoK
       }
     end
 
-    def self.filter(listing, address)
+    def self.listing_filter(listing)
       return false if listing[:title].upcase.include?('WANTED')
+      true
+    end
+
+    def self.address_filter(address)
       return false if address[:zip_code].nil?
       return false if address[:zip_code].size == 0
       return false if address[:zip_code].size > 15
