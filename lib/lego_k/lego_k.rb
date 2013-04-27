@@ -178,11 +178,12 @@ module LegoK
     end
 
     def self.extract_table_value(page, title)
-      row = page.search("table#attributeTable").first
+      row = page.search("table#attributeTable")
+        .first.children
+	.css("tr:contains('#{title}')")
+	.first
       if row
 	row.children
-	  .css("tr:contains('#{title}')")
-	  .first.children
 	  .css("td")
 	  .last.text.strip
       else
