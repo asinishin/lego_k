@@ -168,6 +168,7 @@ module LegoK
     end
 
     def self.extract_table_value(page, column)
+      p page
       page.search("table#attributeTable")
         .first.children
 	.css("tr:contains('#{column}')")
