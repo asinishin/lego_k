@@ -124,20 +124,30 @@ module LegoK
         addr     = s[0]
 	city     = 'Toronto'
 	zip_code = s[1]
-      else
+      elsif s.size > 0
         addr     = '-'
 	city     = 'Toronto'
 	zip_code = s[0]
+      else
+        addr     = nil
+	city     = nil
+	zip_code = nil
       end
-      zip_code = zip_code.split(' ')
-        .reject { |e| e == 'ON' }
-	.join(' ')
-      map_page = page.link_with(:class => "viewmap-link").click
-      lat = map_page.search("meta[property='og:latitude']").first.attr('content')
-      lng = map_page.search("meta[property='og:longitude']").first.attr('content')
+      if zip_code
+	zip_code = zip_code.split(' ')
+	  .reject { |e| e == 'ON' }
+	  .join(' ')
+      end
+      lat = nil
+      lng = nil
+      page.links_with(:class => "viewmap-link").each do |link|
+        map_page = link.click
+	lat = map_page.search("meta[property='og:latitude']").first.attr('content')
+	lng = map_page.search("meta[property='og:longitude']").first.attr('content')
+      end
       {
 	address:        addr,
-	city:           'Toronto',
+	city:           city,
 	state_province: 'ON',
 	zip_code:       zip_code,
 	country_id:     1,
@@ -167,14 +177,17 @@ module LegoK
       Api::extract_table_value(page, 'Price').sub('$', '')
     end
 
-    def self.extract_table_value(page, column)
-      p page
-      page.search("table#attributeTable")
-        .first.children
-	.css("tr:contains('#{column}')")
-	.first.children
-	.css("td")
-	.last.text.strip
+    def self.extract_table_value(page, title)
+      row = page.search("table#attributeTable").first
+      if row
+	row.children
+	  .css("tr:contains('#{title}')")
+	  .first.children
+	  .css("td")
+	  .last.text.strip
+      else
+        ''
+      end
     end
 
   end
