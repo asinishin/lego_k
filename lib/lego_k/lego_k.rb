@@ -61,7 +61,10 @@ module LegoK
       ix = 0
       loop do
 	page = agent.get(BASE_URL + '/c-ViewAdLargeImage?AdId=' + listing_id + '&ImageIndex=' + ix.to_s)
-	pgr = page.search("td#pager").text.split(' / ')
+	pgr = page.search("td#pager")
+	if pgr.size > 0
+	  pgr = pgr.text.split(' / ')
+	end
 	image_nodeset = page.search("img#LargeImage")
 	if image_nodeset.size == 0
 	  break
@@ -69,7 +72,7 @@ module LegoK
 	  image_url = image_nodeset.attr('src')
 	  agent.get(image_url).save_as(BASE_PHOTOS + "p#{listing_id}#{ix}.jpg")
 	  ix += 1
-	  if (pgr.size == 2 && pgr[0] == pgr[1]) || ix > 5
+	  if pgr.size == 0 || (pgr.size == 2 && pgr[0] == pgr[1]) || ix > 8 
 	    break
 	  end
 	end
