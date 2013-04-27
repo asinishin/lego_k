@@ -68,7 +68,7 @@ module LegoK
 	  break
 	else
 	  image_url = image_nodeset.attr('src')
-	  agent.get(image_url).save_as(BASE_PHOTOS + "p#{listing_id}_#{ix}.jpg")
+	  agent.get(image_url).save_as(BASE_PHOTOS + "p#{listing_id}#{ix}.jpg")
 	  ix += 1
 	  if (pgr.size == 2 && pgr[0] == pgr[1]) || ix > 5
 	    break
