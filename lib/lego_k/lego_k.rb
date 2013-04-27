@@ -58,7 +58,6 @@ module LegoK
     end
 
     def self.load_photos(listing_id)
-      FileUtils.rm_rf(Dir.glob(BASE_PHOTOS + '*'))
       ix = 0
       loop do
 	page = agent.get(BASE_URL + '/c-ViewAdLargeImage?AdId=' + listing_id + '&ImageIndex=' + ix.to_s)
