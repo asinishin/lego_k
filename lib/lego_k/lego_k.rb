@@ -187,7 +187,7 @@ module LegoK
 	  .css("td")
 	  .last.text.strip
       else
-        ''
+        " \r\n" # Return an empty address
       end
     end
 
