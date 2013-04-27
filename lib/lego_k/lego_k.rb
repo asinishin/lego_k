@@ -174,7 +174,16 @@ module LegoK
     end
 
     def self.parse_rate(page)
-      Api::extract_table_value(page, 'Price').sub('$', '')
+      s = Api::extract_table_value(page, 'Price').sub('$', '')
+      if Api::is_a_number?(s)
+        s
+      else
+        "51.00"
+      end
+    end
+
+    def self.is_a_number?(s)
+      s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil ? false : true
     end
 
     def self.extract_table_value(page, title)
