@@ -8,21 +8,21 @@ module LegoK
 
   class Api
 
-    def self.agent
-      @@agent ||= Mechanize.new
+    def self.instance
+      @@api_agent ||= Api.new
     end
 
-    def self.download_next_listing(last_loaded_listing_id)
+    def agent
+      @agent ||= Mechanize.new
     end
-    
-    # Low level methods of pages navigation
-    def self.first_page # opens the first page of default category
+
+    def first_page # opens the first page of default category
       page = agent.get(BASE_URL + '/')
       page = page.links.find { |l| l.text == 'storage, parking' }.click
       page.links.find { |l| l.text == "\r\nPosted\r\n" }.click # Change sorting order
     end
 
-    def self.next_page(current_page) # moves to the next page
+    def next_page(current_page) # moves to the next page
       current_page.links_with(:class => "prevNextLink").each do |link|
 	if link.text.include?('Next')
 	  return link.click
@@ -32,7 +32,7 @@ module LegoK
     end
 
     # Low level methods of operating with listings within a page
-    def self.detect_new_listings(page, last_loaded_listing_id) # returns ids of appropirated listings or []
+    def detect_new_listings(page, last_loaded_listing_id) # returns ids of appropirated listings or []
       ids = page.search("input[name='ilIds']").first.attr('value').split(',')
       ids.inject([]) do |r, e|
         if e > last_loaded_listing_id
@@ -43,11 +43,11 @@ module LegoK
       end
     end
 
-    def self.detect_listing(page, listing_id)
+    def detect_listing(page, listing_id)
       page.search("input[name='ilIds']").first.attr('value').split(',').include?(listing_id)
     end
 
-    def self.load_listing_page(page, listing_id)
+    def load_listing_page(page, listing_id)
       node = page
         .search("div[class='#{listing_id}']")
 	.first.parent.parent.parent
@@ -57,7 +57,7 @@ module LegoK
       end
     end
 
-    def self.load_photos(listing_id)
+    def load_photos(listing_id)
       ix = 0
       loop do
 	page = agent.get(BASE_URL + '/c-ViewAdLargeImage?AdId=' + listing_id + '&ImageIndex=' + ix.to_s)
@@ -80,10 +80,10 @@ module LegoK
     end
 
     # Methods for parsing a listing
-    def self.parse_listing(page, listing_id)
+    def parse_listing(page, listing_id)
       {
-	title:          Api::extract_title(page),
-	description:    Api::parse_description(page),
+	title:          extract_title(page),
+	description:    parse_description(page),
 	space_type_id:  1,
 	length:         1.0,
 	width:          1.0,
@@ -91,7 +91,7 @@ module LegoK
 	is_for_vehicle: false,
 	is_small_transport: false,
 	is_large_transport: false,
-	rental_rate:    Api::parse_rate(page),
+	rental_rate:    parse_rate(page),
 	surface_id:     1,
 	rental_term_id: 1,
 	is_no_height:   false,
@@ -100,12 +100,12 @@ module LegoK
       }
     end
 
-    def self.listing_filter(listing)
+    def listing_filter(listing)
       return false if listing[:title].upcase.include?('WANTED')
       true
     end
 
-    def self.address_filter(address)
+    def address_filter(address)
       return false if address[:zip_code].nil?
       return false if address[:zip_code].size == 0
       return false if address[:zip_code].size > 15
@@ -113,8 +113,8 @@ module LegoK
       true
     end
 
-    def self.parse_address(page)
-      s = Api::extract_address(page)
+    def parse_address(page)
+      s = extract_address(page)
         .split("\r\n")[0]
 	.split(',')
 	.map { |e| e.strip }
@@ -165,37 +165,37 @@ module LegoK
       }    
     end
 
-    def self.extract_title(page)
+    def extract_title(page)
       s = page.search("h1#preview-local-title").text
       return s[0..49] if s.size > 50
       s
     end
 
-    def self.extract_address(page)
-      Api::extract_table_value(page, 'Address')
+    def extract_address(page)
+      extract_table_value(page, 'Address')
     end
 
-    def self.parse_description(page)
+    def parse_description(page)
       page.search("div#ad-desc")
         .first.children
 	.css("span")
 	.text.strip
     end
 
-    def self.parse_rate(page)
-      s = Api::extract_table_value(page, 'Price').sub('$', '')
-      if Api::is_a_number?(s)
+    def parse_rate(page)
+      s = extract_table_value(page, 'Price').sub('$', '')
+      if is_a_number?(s)
         s
       else
         "51.00"
       end
     end
 
-    def self.is_a_number?(s)
+    def is_a_number?(s)
       s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil ? false : true
     end
 
-    def self.extract_table_value(page, title)
+    def extract_table_value(page, title)
       row = page.search("table#attributeTable")
         .first.children
 	.css("tr:contains('#{title}')")

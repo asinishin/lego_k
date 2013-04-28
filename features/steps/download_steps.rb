@@ -1,6 +1,6 @@
 When(/^the service loaded the first page$/) do
-  @page = LegoK::Api.first_page
-  # p @page
+  @source = LegoK::Api.instance
+  @page = @source.first_page
 end
 
 Then(/^the page should contain filter "(.*?)" with value "(.*?)"$/) do |arg1, arg2|
@@ -8,18 +8,19 @@ Then(/^the page should contain filter "(.*?)" with value "(.*?)"$/) do |arg1, ar
 end
 
 Given(/^the last loaded listing: "(.*?)"$/) do |arg1|
-  @page = LegoK::Api.first_page
+  @source = LegoK::Api.instance
+  @page = @source.first_page
   @last_loaded_listing = arg1
 end
 
 When(/^the service detected a page with new listings$/) do
   @new_listings = []
   loop do
-    @new_listings = LegoK::Api.detect_new_listings(@page, @last_loaded_listing)
+    @new_listings = @source.detect_new_listings(@page, @last_loaded_listing)
     if @new_listings.size > 0
       break
     else
-      @page = LegoK::Api.next_page(@page)
+      @page = @source.next_page(@page)
       if @page.nil?
         break
       end
@@ -28,18 +29,18 @@ When(/^the service detected a page with new listings$/) do
 end
 
 Then(/^the page should contain listing: "(.*?)"$/) do |arg1|
-  #@new_listings.find { |e| e == arg1 }.should eq(arg1)
   @new_listings.should include(arg1)
 end
 
 When(/^the service detected a page with the listing: "(.*?)"$/) do |arg1|
+  @source = LegoK::Api.instance
   @listing_id = arg1
-  @page = LegoK::Api.first_page
+  @page = @source.first_page
   loop do
-    if LegoK::Api.detect_listing(@page, arg1)
+    if @source.detect_listing(@page, arg1)
       break
     else
-      @page = LegoK::Api.next_page(@page)
+      @page = @source.next_page(@page)
       if @page.nil?
         break
       end
@@ -48,15 +49,15 @@ When(/^the service detected a page with the listing: "(.*?)"$/) do |arg1|
 end
 
 When(/^the service loaded the page with specified listing$/) do
-  @page = LegoK::Api.load_listing_page(@page, @listing_id)
+  @page = @source.load_listing_page(@page, @listing_id)
 end
 
 Then(/^the page should contain title: "(.*?)"$/) do |arg1|
-  listing = LegoK::Api.parse_listing(@page, @listing_id)
+  listing = @source.parse_listing(@page, @listing_id)
   p listing[:title]
   p listing[:description]
   p listing[:rental_rate]
-  address = LegoK::Api.parse_address(@page)
+  address = @source.parse_address(@page)
   p address
-  LegoK::Api.load_photos(@listing_id)
+  @source.load_photos(@listing_id)
 end
