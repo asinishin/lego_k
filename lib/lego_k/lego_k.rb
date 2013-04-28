@@ -145,8 +145,14 @@ module LegoK
       lng = nil
       page.links_with(:class => "viewmap-link").each do |link|
         map_page = link.click
-	lat = map_page.search("meta[property='og:latitude']").first.try(:attr, 'content')
-	lng = map_page.search("meta[property='og:longitude']").first.try(:attr, 'content')
+	lat_node = map_page.search("meta[property='og:latitude']").first
+	if lat_node
+	  lat = lat_node.attr('content')
+	end
+	lng_node = map_page.search("meta[property='og:longitude']").first
+	if lng_node
+	  lng = lng_node.attr('content')
+	end
       end
       {
 	address:        addr,
