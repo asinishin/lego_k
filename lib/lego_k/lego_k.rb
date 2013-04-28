@@ -109,6 +109,7 @@ module LegoK
       return false if address[:zip_code].nil?
       return false if address[:zip_code].size == 0
       return false if address[:zip_code].size > 15
+      return false if address[:latitude].nil? || address[:longitude].nil?
       true
     end
 
@@ -144,8 +145,8 @@ module LegoK
       lng = nil
       page.links_with(:class => "viewmap-link").each do |link|
         map_page = link.click
-	lat = map_page.search("meta[property='og:latitude']").first.attr('content')
-	lng = map_page.search("meta[property='og:longitude']").first.attr('content')
+	lat = map_page.search("meta[property='og:latitude']").first.try(:attr, 'content')
+	lng = map_page.search("meta[property='og:longitude']").first.try(:attr, 'content')
       end
       {
 	address:        addr,
