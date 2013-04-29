@@ -95,6 +95,7 @@ module LegoK
 	surface_id:     1,
 	rental_term_id: 1,
 	is_no_height:   false,
+	src_url:        page.uri.to_s,
 	source_site:    'kj',
 	source_id:      listing_id
       }

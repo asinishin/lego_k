@@ -57,6 +57,7 @@ Then(/^the page should contain title: "(.*?)"$/) do |arg1|
   p listing[:title]
   p listing[:description]
   p listing[:rental_rate]
+  p listing[:src_url]
   address = @source.parse_address(@page)
   p address
   @source.load_photos(@listing_id)
